@@ -1,13 +1,21 @@
 ﻿{
   "name": "mental-health-journal-server",
-  "version": "1.0.0",
-  "description": "Backend API for Mental Health Journal",
+  "version": "2.0.0",
+  "description": "Backend API for Mental Health Journal with AI-powered insights",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["mental-health", "journal", "api"],
+  "keywords": [
+    "mental-health",
+    "journal",
+    "api",
+    "ai",
+    "pattern-detection",
+    "sentiment-analysis"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
@@ -18,7 +26,10 @@
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "axios": "^1.6.0",
+    "node-cron": "^3.0.3",
+    "natural": "^6.10.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
