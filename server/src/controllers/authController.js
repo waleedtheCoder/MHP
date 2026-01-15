@@ -1,15 +1,6 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const { User } = require('../models/Index');
-
-/**
- * Generate JWT token
- */
-const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE || '7d',
-  });
-};
+const { generateToken } = require('../config/jwt');
 
 /**
  * @desc    Register new user
@@ -29,12 +20,7 @@ const register = async (req, res) => {
     }
 
     // Check if user exists
-    const existingUser = await User.findOne({
-      where: {
-        email,
-      },
-    });
-
+    const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -43,10 +29,7 @@ const register = async (req, res) => {
     }
 
     // Check username availability
-    const existingUsername = await User.findOne({
-      where: { username },
-    });
-
+    const existingUsername = await User.findOne({ where: { username } });
     if (existingUsername) {
       return res.status(400).json({
         success: false,
@@ -62,12 +45,8 @@ const register = async (req, res) => {
       });
     }
 
-    // Create user (password will be hashed by beforeCreate hook)
-    const user = await User.create({
-      username,
-      email,
-      password,
-    });
+    // Create user (password hashed by beforeCreate hook)
+    const user = await User.create({ username, email, password });
 
     // Generate token
     const token = generateToken(user.id);
@@ -110,10 +89,7 @@ const login = async (req, res) => {
     }
 
     // Find user by email
-    const user = await User.findOne({
-      where: { email },
-    });
-
+    const user = await User.findOne({ where: { email } });
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -123,7 +99,6 @@ const login = async (req, res) => {
 
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
-
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
@@ -161,13 +136,13 @@ const login = async (req, res) => {
  */
 const getMe = async (req, res) => {
   try {
-    // req.user is set by protect middleware
     res.json({
       success: true,
       user: {
         id: req.user.id,
         username: req.user.username,
         email: req.user.email,
+        createdAt: req.user.createdAt,
       },
     });
   } catch (error) {
@@ -179,8 +154,97 @@ const getMe = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Update user profile
+ * @route   PUT /api/auth/profile
+ * @access  Private
+ */
+const updateProfile = async (req, res) => {
+  try {
+    const { username, email } = req.body;
+    const user = req.user;
+
+    // Update fields
+    if (username) user.username = username;
+    if (email) user.email = email;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating profile',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Change password
+ * @route   PUT /api/auth/change-password
+ * @access  Private
+ */
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide current and new password',
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters',
+      });
+    }
+
+    // Verify current password
+    const user = await User.findByPk(req.user.id);
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Current password is incorrect',
+      });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Password changed successfully',
+    });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error changing password',
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
   getMe,
+  updateProfile,
+  changePassword,
 };
