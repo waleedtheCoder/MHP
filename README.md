@@ -60,7 +60,7 @@ Each journal entry is analyzed automatically to:
 
 ---
 
-### 3. 🔍 Pattern Detection (Advanced)
+### 3. 🔍 Pattern Detection
 The system identifies long-term mental health patterns:
 
 #### Emotional Cycles
@@ -82,7 +82,7 @@ The system identifies long-term mental health patterns:
 
 ---
 
-### 4. 🔮 Predictive Interventions (Advanced)
+### 4. 🔮 Predictive Interventions 
 The app predicts emotional dips **before they happen** and provides support in advance.
 
 - Forecasts mood changes (7–14 days ahead)
@@ -96,7 +96,7 @@ The app predicts emotional dips **before they happen** and provides support in a
 
 ---
 
-### 5. 🩸 Menstrual Cycle Integration (Optional)
+### 5. 🩸 Menstrual Cycle Integration
 For female users who opt in:
 - Track cycle phases (menstruation, follicular, ovulation, luteal)
 - Correlate mood with hormonal changes
